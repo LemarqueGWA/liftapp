@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lift">
+<meta name="theme-color" content="#0a0a0a">
+<title>Lift — Training</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230a0a0a'/%3E%3Ctext x='90' y='118' font-family='-apple-system,sans-serif' font-size='100' font-weight='900' fill='%23ff4500' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #0a0a0a;
+  --card: #161616;
+  --card-2: #1f1f1f;
+  --border: #2a2a2a;
+  --text: #f5f5f5;
+  --muted: #888;
+  --accent: #ff4500;
+  --accent-dim: #cc3700;
+  --success: #4caf50;
+  --warn: #ff9800;
+  --danger: #f44336;
+  --input: #0f0f0f;
+}
+html, body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+  user-select: none; -webkit-user-select: none;
+  height: 100%; overflow: hidden;
+}
+input, textarea { user-select: text; -webkit-user-select: text; }
+.app { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; }
+.header {
+  padding: env(safe-area-inset-top) 20px 12px; background: var(--bg);
+  border-bottom: 1px solid var(--border); padding-top: calc(env(safe-area-inset-top) + 12px);
+}
+.header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.header .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 100px; }
+.tabbar {
+  display: flex; background: #060606; border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  flex: 1; padding: 12px 4px 10px; text-align: center;
+  color: var(--muted); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+}
+.tab.active { color: var(--accent); }
+.tab .icon { font-size: 22px; display: block; margin-bottom: 2px; }
+.card {
+  background: var(--card); border-radius: 14px; padding: 16px;
+  margin-bottom: 12px; border: 1px solid var(--border);
+}
+.card h2 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+.card h3 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+.day-banner {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  border-radius: 14px; padding: 18px 18px; margin-bottom: 14px; color: #fff;
+}
+.day-banner .label { font-size: 11px; font-weight: 700; opacity: 0.85; letter-spacing: 1.5px; }
+.day-banner .name { font-size: 24px; font-weight: 800; margin-top: 2px; }
+.day-banner .desc { font-size: 13px; opacity: 0.95; margin-top: 6px; }
+
+.exercise {
+  background: var(--card); border-radius: 14px; margin-bottom: 10px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.exercise.done { border-color: var(--success); opacity: 0.7; }
+.ex-head { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.ex-name { font-size: 15px; font-weight: 700; flex: 1; }
+.ex-meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.ex-meta span { display: inline-flex; align-items: center; gap: 3px; }
+.ex-meta b { color: var(--text); font-weight: 600; }
+.ex-target {
+  font-size: 11px; color: var(--accent); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+.chevron { color: var(--muted); font-size: 18px; transition: transform 0.2s; }
+.exercise.open .chevron { transform: rotate(90deg); }
+.ex-body { padding: 0 16px 16px; display: none; }
+.exercise.open .ex-body { display: block; }
+.ex-notes { font-size: 12px; color: var(--muted); margin: 0 0 12px; line-height: 1.4; }
+.set-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.set-row {
+  display: grid; grid-template-columns: 32px 1fr 1fr 1fr 36px;
+  gap: 6px; align-items: center; padding: 6px 0;
+}
+.set-num { font-weight: 700; color: var(--muted); font-size: 13px; text-align: center; }
+.set-input {
+  background: var(--input); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 10px 6px; font-size: 16px; font-weight: 600;
+  text-align: center; width: 100%; font-family: inherit;
+}
+.set-input::placeholder { color: #444; }
+.set-input:focus { outline: none; border-color: var(--accent); background: #1a1a1a; }
+.set-del {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 18px; padding: 4px; cursor: pointer;
+}
+.set-headers {
+  display: grid; grid-template-columns: 32px 1fr 1fr 1fr 36px;
+  gap: 6px; font-size: 10px; color: var(--muted); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px; padding: 0 0 4px; text-align: center;
+}
+.set-headers .first-h { text-align: center; }
+
+.btn {
+  background: var(--accent); color: #fff; border: none;
+  padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
+}
+.btn:active { background: var(--accent-dim); }
+.btn-block { width: 100%; padding: 14px; font-size: 15px; }
+.btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+.btn-sm { padding: 8px 12px; font-size: 12px; }
+.btn-grey { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+
+.timer-fab {
+  position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); right: 16px;
+  background: var(--accent); color: #fff; padding: 14px 18px; border-radius: 30px;
+  font-weight: 800; font-size: 18px; box-shadow: 0 6px 20px rgba(255,69,0,0.4);
+  z-index: 50; display: none; align-items: center; gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.timer-fab.show { display: inline-flex; }
+.timer-fab .stop { font-size: 14px; opacity: 0.7; }
+
+.kv-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.kv-row:last-child { border: none; }
+.kv-row .k { color: var(--muted); font-size: 13px; }
+.kv-row .v { font-weight: 700; font-size: 15px; }
+.kv-row input[type="number"], .kv-row input[type="date"] {
+  background: var(--input); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 12px; border-radius: 8px; font-size: 15px; font-weight: 600;
+  text-align: right; width: 120px; font-family: inherit;
+}
+
+.alert { border-left: 3px solid var(--warn); padding: 10px 12px; background: rgba(255,152,0,0.08); border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+.alert.bad { border-color: var(--danger); background: rgba(244,67,54,0.08); }
+.alert.good { border-color: var(--success); background: rgba(76,175,80,0.08); }
+
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+.day-cell { aspect-ratio: 1; background: var(--card-2); border-radius: 8px; padding: 6px 4px; text-align: center; font-size: 10px; cursor: pointer; }
+.day-cell .d { font-weight: 700; color: var(--muted); }
+.day-cell .s { font-size: 9px; margin-top: 2px; color: var(--text); font-weight: 600; }
+.day-cell.today { background: var(--accent); }
+.day-cell.today .d, .day-cell.today .s { color: #fff; }
+.day-cell.rest { opacity: 0.5; }
+
+.bar { display: flex; align-items: flex-end; gap: 3px; height: 80px; margin: 12px 0; }
+.bar-col { flex: 1; background: var(--accent-dim); border-radius: 3px 3px 0 0; min-height: 4px; position: relative; }
+.bar-col .label { position: absolute; bottom: -16px; left: 0; right: 0; text-align: center; font-size: 9px; color: var(--muted); }
+
+.calc-row { display: grid; grid-template-columns: 1fr 100px; gap: 12px; align-items: center; padding: 10px 0; }
+.calc-row label { font-size: 13px; color: var(--text); }
+.calc-row input { background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 8px; font-size: 15px; font-weight: 700; text-align: center; font-family: inherit; }
+.calc-row .out { background: var(--card-2); padding: 10px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 15px; color: var(--accent); }
+
+.ramp-set { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; padding: 10px 12px; background: var(--card-2); border-radius: 8px; margin-bottom: 6px; align-items: center; font-size: 14px; }
+.ramp-set.top { background: var(--accent); color: #fff; font-weight: 700; }
+.ramp-set .ld { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.toast {
+  position: fixed; top: calc(env(safe-area-inset-top) + 60px); left: 50%; transform: translateX(-50%);
+  background: var(--success); color: #fff; padding: 10px 18px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; z-index: 100; opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.toast.warn { background: var(--warn); }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+.empty .ic { font-size: 48px; opacity: 0.3; margin-bottom: 12px; }
+
+@media (max-width: 360px) {
+  .day-banner .name { font-size: 20px; }
+  .set-input { font-size: 14px; padding: 8px 4px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1 id="screenTitle">Today</h1>
+    <div class="sub" id="screenSub"></div>
+  </div>
+  <div class="main" id="main"></div>
+  <div class="timer-fab" id="timerFab" onclick="stopTimer()">
+    <span id="timerDisplay">0:00</span>
+    <span class="stop">✕</span>
+  </div>
+  <div class="tabbar">
+    <div class="tab active" data-screen="today" onclick="nav('today')"><span class="icon">▣</span>Today</div>
+    <div class="tab" data-screen="schedule" onclick="nav('schedule')"><span class="icon">▦</span>Week</div>
+    <div class="tab" data-screen="progress" onclick="nav('progress')"><span class="icon">↗</span>Progress</div>
+    <div class="tab" data-screen="tools" onclick="nav('tools')"><span class="icon">⚙</span>Tools</div>
+    <div class="tab" data-screen="settings" onclick="nav('settings')"><span class="icon">≡</span>More</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ========================= DATA MODEL =========================
+const PROGRAM = {
+  A: {
+    name: 'Lift A — Lower', desc: 'Strength-led. ~45 min, then easy run 3 km.', day: 1,
+    exercises: [
+      {id:'sq-top', name:'Back squat (top set)', sets:1, reps:'5', rpe:8, bump:5, notes:'Ramp up. Top set only counts for progression.'},
+      {id:'sq-bo', name:'Back squat (back-off)', sets:2, reps:'5', rpe:7, bump:5, notes:'-10% of top set.'},
+      {id:'rdl', name:'Romanian deadlift', sets:3, reps:'6-8', rpe:7, bump:5, notes:'Slow eccentric.'},
+      {id:'wpu', name:'Weighted pull-up', sets:3, reps:'5', rpe:8, bump:2.5, notes:'SS w/ DB bench. Log added weight.'},
+      {id:'dbb', name:'DB bench press', sets:3, reps:'6-8', rpe:7, bump:2.5, notes:'SS w/ pull-up. Per DB.'},
+      {id:'fp', name:'Cable face pull', sets:3, reps:'15', rpe:7, bump:2.5, notes:'Rear delt.'},
+      {id:'plk', name:'Weighted plank', sets:3, reps:'45s', rpe:7, bump:2.5, notes:'Core.'}
+    ]
+  },
+  B: {
+    name: 'Lift B — Upper', desc: 'Hypertrophy-led. ~45 min, then easy run 3 km.', day: 3,
+    exercises: [
+      {id:'idb', name:'Incline DB bench press', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Main push. Per DB.'},
+      {id:'br', name:'Barbell row', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Strict, torso ~45°.'},
+      {id:'bss', name:'Bulgarian split squat', sets:3, reps:'10/leg', rpe:8, bump:2.5, notes:'SS w/ dip. Per DB.'},
+      {id:'wd', name:'Weighted dip', sets:3, reps:'8-10', rpe:8, bump:2.5, notes:'SS w/ BSS. Added weight.'},
+      {id:'lr', name:'Cable lateral raise', sets:3, reps:'12-15', rpe:7, bump:1.25, notes:'Side delt.'},
+      {id:'hc', name:'DB hammer curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'Per DB.'},
+      {id:'hlr', name:'Hanging leg raise', sets:3, reps:'12', rpe:8, bump:0, notes:'Bodyweight.'}
+    ]
+  },
+  C: {
+    name: 'Lift C — Mixed', desc: 'Posterior + press. Pre-lift: 20g carbs. Long run after.', day: 5,
+    exercises: [
+      {id:'dl', name:'Conventional deadlift', sets:3, reps:'3-5', rpe:8, bump:5, notes:'20g carbs pre-lift.'},
+      {id:'ohp', name:'Overhead press (BB)', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'Strict, no leg drive.'},
+      {id:'fsq', name:'Front squat', sets:3, reps:'8', rpe:7, bump:2.5, notes:'Quad emphasis.'},
+      {id:'wcu', name:'Weighted chin-up', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'SS w/ carry. Added weight.'},
+      {id:'fc', name:"Farmer's carry", sets:3, reps:'40m', rpe:8, bump:5, notes:'SS w/ chin-up. Per DB.'},
+      {id:'tpd', name:'Cable triceps pushdown', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'Rope.'},
+      {id:'cc', name:'Cable crunch', sets:3, reps:'15', rpe:8, bump:2.5, notes:'Core.'}
+    ]
+  },
+  D: {
+    name: 'Lift D — Pump', desc: 'Optional ~22 min. Aesthetic isolation. Swim after.', day: 6,
+    exercises: [
+      {id:'cr', name:'Standing calf raise', sets:4, reps:'10-12', rpe:8, bump:2.5, notes:'SS w/ shrug. 1s pause.'},
+      {id:'sh', name:'DB shrug', sets:4, reps:'12-15', rpe:8, bump:2.5, notes:'SS w/ calf. Pure vertical.'},
+      {id:'lr2', name:'Cable lateral raise (1-arm)', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ curl.'},
+      {id:'icu', name:'DB incline curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'SS w/ LR. ~60° bench.'},
+      {id:'oce', name:'Overhead cable tri ext', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ leg curl.'},
+      {id:'lc', name:'Seated leg curl / Nordic', sets:3, reps:'8-12', rpe:8, bump:2.5, notes:'SS w/ tri. Hamstring knee flex.'}
+    ]
+  }
+};
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+const DEFAULT_CONFIG = {
+  bodyweight: 75, age: 28, sleep: 5.5, proteinGperKg: 2.0, surplus: 250,
+  startDate: new Date().toISOString().slice(0,10)
+};
+
+// ========================= STORAGE =========================
+const KEY = 'liftapp_v1';
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return { config: {...DEFAULT_CONFIG}, log: {}, openExercises: {} };
+    const s = JSON.parse(raw);
+    s.config = {...DEFAULT_CONFIG, ...s.config};
+    s.log = s.log || {};
+    s.openExercises = s.openExercises || {};
+    return s;
+  } catch(e) {
+    return { config: {...DEFAULT_CONFIG}, log: {}, openExercises: {} };
+  }
+}
+function saveState() { localStorage.setItem(KEY, JSON.stringify(state)); }
+let state = loadState();
+
+// ========================= UTILITIES =========================
+function getCurrentWeek() {
+  const start = new Date(state.config.startDate + 'T00:00:00');
+  const now = new Date();
+  const diff = Math.floor((now - start) / (1000*60*60*24*7)) + 1;
+  return Math.max(1, Math.min(12, diff));
+}
+function isDeloadWeek(w) { return w === 6 || w === 12; }
+function todayDay() { return new Date().getDay(); }
+
+// Find which lift letter is scheduled today (or null if rest/swim only day)
+function todayLift() {
+  const d = todayDay();
+  for (const [k, v] of Object.entries(PROGRAM)) if (v.day === d) return k;
+  return null;
+}
+function dayLabel(d) {
+  if (d === 0) return {label:'Rest', sub:'Sleep priority.'};
+  if (d === 2) return {label:'Swim', sub:'20 min easy aerobic. Active recovery.'};
+  if (d === 4) return {label:'Mobility / Rest', sub:'Non-negotiable recovery day.'};
+  const k = todayLift();
+  if (k) return {label: PROGRAM[k].name, sub: PROGRAM[k].desc};
+  return {label:'Rest', sub:''};
+}
+
+// Get the most recent logged session for a lift, before or equal to a given week
+function lastSession(liftKey, beforeWeek) {
+  for (let w = beforeWeek - 1; w >= 1; w--) {
+    const key = `w${w}_${liftKey}`;
+    if (state.log[key] && state.log[key].sets) return {week:w, data:state.log[key]};
+  }
+  return null;
+}
+
+// Suggested weight for an exercise this week (auto-progression)
+function suggestWeight(liftKey, exId, currentWeek) {
+  const ex = PROGRAM[liftKey].exercises.find(e => e.id === exId);
+  if (!ex) return '';
+  const last = lastSession(liftKey, currentWeek);
+  if (!last) return '';
+  const prevSets = last.data.sets[exId];
+  if (!prevSets || !prevSets.length) return '';
+  // Use first set's weight as reference, and worst RPE across sets
+  const ref = prevSets[0];
+  if (!ref.weight) return '';
+  const maxRpe = Math.max(...prevSets.filter(s=>s.rpe).map(s=>parseFloat(s.rpe)));
+  if (isDeloadWeek(currentWeek)) return parseFloat(ref.weight);
+  if (!maxRpe) return parseFloat(ref.weight);
+  if (maxRpe <= ex.rpe) return parseFloat(ref.weight) + ex.bump;
+  return parseFloat(ref.weight);
+}
+
+function ensureSession(liftKey, week) {
+  const k = `w${week}_${liftKey}`;
+  if (!state.log[k]) state.log[k] = { date: new Date().toISOString(), sets: {} };
+  return state.log[k];
+}
+
+// ========================= NAV =========================
+let currentScreen = 'today';
+function nav(s) {
+  currentScreen = s;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === s));
+  render();
+}
+
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast ' + type, 2000);
+}
+
+// ========================= RENDER =========================
+function render() {
+  const title = document.getElementById('screenTitle');
+  const sub = document.getElementById('screenSub');
+  const main = document.getElementById('main');
+  const week = getCurrentWeek();
+  if (currentScreen === 'today') {
+    const day = todayDay();
+    title.textContent = DAY_FULL[day];
+    sub.textContent = `Week ${week}${isDeloadWeek(week) ? ' • DELOAD' : ''}`;
+    main.innerHTML = renderToday(week);
+  } else if (currentScreen === 'schedule') {
+    title.textContent = 'Weekly Schedule';
+    sub.textContent = `Week ${week} of 12`;
+    main.innerHTML = renderSchedule(week);
+  } else if (currentScreen === 'progress') {
+    title.textContent = 'Progress';
+    sub.textContent = '12-week trajectory';
+    main.innerHTML = renderProgress();
+  } else if (currentScreen === 'tools') {
+    title.textContent = 'Tools';
+    sub.textContent = '1RM, ramp, plates, nutrition';
+    main.innerHTML = renderTools();
+    bindToolHandlers();
+  } else if (currentScreen === 'settings') {
+    title.textContent = 'Settings';
+    sub.textContent = 'Profile, data, export';
+    main.innerHTML = renderSettings();
+  }
+}
+
+function renderToday(week) {
+  const d = todayDay();
+  const liftKey = todayLift();
+  const info = dayLabel(d);
+  let html = `<div class="day-banner">
+    <div class="label">${DAY_NAMES[d].toUpperCase()} • WEEK ${week}${isDeloadWeek(week) ? ' • DELOAD' : ''}</div>
+    <div class="name">${info.label}</div>
+    <div class="desc">${info.sub}</div>
+  </div>`;
+
+  // Sleep warning
+  if (state.config.sleep < 6) {
+    html += `<div class="alert">⚠ Avg sleep ${state.config.sleep}h is below the recovery threshold. Muscle gain capped until this improves.</div>`;
+  }
+
+  if (!liftKey) {
+    html += `<div class="empty"><div class="ic">✓</div><div>${d === 0 || d === 4 ? 'Rest day. Recovery is training.' : 'Cardio only today.'}</div></div>`;
+    return html;
+  }
+
+  // Lift session
+  const program = PROGRAM[liftKey];
+  const session = state.log[`w${week}_${liftKey}`];
+
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:14px 4px 8px;">
+    <div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;">EXERCISES</div>
+    <div style="font-size:11px;color:var(--muted);">${program.exercises.length} total</div>
+  </div>`;
+
+  program.exercises.forEach((ex, idx) => {
+    const exKey = `${liftKey}_${ex.id}_${week}`;
+    const isOpen = state.openExercises[exKey];
+    const setsLogged = session?.sets?.[ex.id] || [];
+    const allDone = setsLogged.length >= ex.sets && setsLogged.every(s => s.weight && s.reps);
+    const suggested = suggestWeight(liftKey, ex.id, week);
+    const targetText = `${ex.sets} × ${ex.reps} @ RPE ${ex.rpe}`;
+    const suggestedText = suggested ? `Suggested: <b>${suggested} kg</b>` : 'Week 1 — pick your start';
+    html += `<div class="exercise ${isOpen?'open':''} ${allDone?'done':''}" data-key="${exKey}">
+      <div class="ex-head" onclick="toggleEx('${exKey}')">
+        <div style="flex:1">
+          <div class="ex-name">${idx+1}. ${ex.name} ${allDone?'<span style="color:var(--success);font-size:14px;">✓</span>':''}</div>
+          <div class="ex-target">${targetText}</div>
+          <div class="ex-meta"><span>${suggestedText}</span></div>
+        </div>
+        <div class="chevron">›</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-notes">${ex.notes}</div>
+        <div class="set-headers"><span class="first-h">#</span><span>Weight kg</span><span>Reps</span><span>RPE</span><span></span></div>
+        <div class="set-list" id="sets-${exKey}">${renderSets(liftKey, ex, week, suggested)}</div>
+        <button class="btn btn-grey btn-block btn-sm" onclick="addSet('${liftKey}','${ex.id}',${week})">+ Add set</button>
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="card" style="margin-top:18px;">
+    <h3>Session notes</h3>
+    <textarea id="sessionNotes" style="width:100%;background:var(--input);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;min-height:60px;" placeholder="How did it feel? Sleep, mood, niggles...">${session?.notes||''}</textarea>
+    <button class="btn btn-ghost btn-sm btn-block" style="margin-top:10px;" onclick="saveNotes('${liftKey}',${week})">Save notes</button>
+  </div>`;
+
+  return html;
+}
+
+function renderSets(liftKey, ex, week, suggested) {
+  const session = state.log[`w${week}_${liftKey}`];
+  const sets = session?.sets?.[ex.id] || [];
+  // Ensure at least ex.sets rows visible
+  const numRows = Math.max(ex.sets, sets.length);
+  let html = '';
+  for (let i = 0; i < numRows; i++) {
+    const s = sets[i] || {};
+    const wPlaceholder = (i === 0 && suggested) ? suggested : '';
+    html += `<div class="set-row" data-set="${i}">
+      <div class="set-num">${i+1}</div>
+      <input class="set-input" type="number" inputmode="decimal" step="0.5" placeholder="${wPlaceholder}" value="${s.weight||''}" onchange="updateSet('${liftKey}','${ex.id}',${week},${i},'weight',this.value)">
+      <input class="set-input" type="number" inputmode="numeric" placeholder="${ex.reps}" value="${s.reps||''}" onchange="updateSet('${liftKey}','${ex.id}',${week},${i},'reps',this.value);startTimer(90);">
+      <input class="set-input" type="number" inputmode="decimal" step="0.5" min="1" max="10" placeholder="${ex.rpe}" value="${s.rpe||''}" onchange="updateSet('${liftKey}','${ex.id}',${week},${i},'rpe',this.value)">
+      <button class="set-del" onclick="delSet('${liftKey}','${ex.id}',${week},${i})">×</button>
+    </div>`;
+  }
+  return html;
+}
+
+function toggleEx(key) {
+  state.openExercises[key] = !state.openExercises[key];
+  saveState();
+  render();
+}
+
+function updateSet(liftKey, exId, week, idx, field, val) {
+  const session = ensureSession(liftKey, week);
+  session.sets[exId] = session.sets[exId] || [];
+  while (session.sets[exId].length <= idx) session.sets[exId].push({});
+  session.sets[exId][idx][field] = val;
+  session.date = new Date().toISOString();
+  saveState();
+}
+
+function addSet(liftKey, exId, week) {
+  const session = ensureSession(liftKey, week);
+  session.sets[exId] = session.sets[exId] || [];
+  session.sets[exId].push({});
+  saveState();
+  render();
+}
+
+function delSet(liftKey, exId, week, idx) {
+  const session = state.log[`w${week}_${liftKey}`];
+  if (!session?.sets?.[exId]) return;
+  session.sets[exId].splice(idx, 1);
+  saveState();
+  render();
+}
+
+function saveNotes(liftKey, week) {
+  const session = ensureSession(liftKey, week);
+  session.notes = document.getElementById('sessionNotes').value;
+  saveState();
+  toast('Notes saved');
+}
+
+// ========================= SCHEDULE =========================
+function renderSchedule(week) {
+  const today = todayDay();
+  const schedule = [
+    {d:0, label:'Rest', cls:'rest'},
+    {d:1, label:'Lift A', key:'A'},
+    {d:2, label:'Swim', cls:'rest'},
+    {d:3, label:'Lift B', key:'B'},
+    {d:4, label:'Rest', cls:'rest'},
+    {d:5, label:'Lift C', key:'C'},
+    {d:6, label:'D+Swim', key:'D'},
+  ];
+  let html = `<div class="card">
+    <h2>This week</h2>
+    <div class="week-grid">${schedule.map(s => `
+      <div class="day-cell ${s.cls||''} ${s.d===today?'today':''}">
+        <div class="d">${DAY_NAMES[s.d]}</div>
+        <div class="s">${s.label}</div>
+      </div>`).join('')}</div>
+  </div>`;
+
+  // Show progression for each lift
+  ['A','B','C','D'].forEach(k => {
+    const p = PROGRAM[k];
+    const last = lastSession(k, 13);
+    html += `<div class="card">
+      <h2>${p.name}</h2>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${DAY_FULL[p.day]}</div>
+      ${last ? `<div style="font-size:13px;">Last logged: Week ${last.week}, ${new Date(last.data.date).toLocaleDateString()}</div>` : '<div style="font-size:13px;color:var(--muted);">Not yet started</div>'}
+    </div>`;
+  });
+
+  return html;
+}
+
+// ========================= PROGRESS =========================
+function renderProgress() {
+  // Show top set progression for each lift's main compound
+  const lifts = {
+    A: { name: 'Back squat', exId: 'sq-top' },
+    B: { name: 'Incline DB bench', exId: 'idb' },
+    C: { name: 'Deadlift', exId: 'dl' }
+  };
+  let html = '';
+  for (const [k, info] of Object.entries(lifts)) {
+    const points = [];
+    for (let w = 1; w <= 12; w++) {
+      const session = state.log[`w${w}_${k}`];
+      const sets = session?.sets?.[info.exId];
+      if (sets && sets.length && sets[0].weight) {
+        points.push({week: w, weight: parseFloat(sets[0].weight)});
+      }
+    }
+    const maxW = points.length ? Math.max(...points.map(p=>p.weight)) : 100;
+    html += `<div class="card">
+      <h2>${info.name}</h2>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Top set across 12 weeks</div>`;
+    if (!points.length) {
+      html += `<div class="empty" style="padding:20px 0;"><div>No data yet</div></div>`;
+    } else {
+      html += `<div class="bar">`;
+      for (let w = 1; w <= 12; w++) {
+        const p = points.find(x => x.week === w);
+        const h = p ? Math.max(8, (p.weight / maxW) * 76) : 4;
+        const isDeload = isDeloadWeek(w);
+        const color = isDeload ? 'var(--warn)' : (p ? 'var(--accent)' : 'var(--border)');
+        html += `<div class="bar-col" style="height:${h}px;background:${color};" title="W${w}: ${p?p.weight+'kg':'-'}"><div class="label">${w}</div></div>`;
+      }
+      html += `</div><div style="font-size:11px;color:var(--muted);margin-top:18px;">Latest: <b style="color:var(--text);">${points[points.length-1].weight} kg</b> (Week ${points[points.length-1].week})</div>`;
+    }
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+// ========================= TOOLS =========================
+function renderTools() {
+  return `
+  <div class="card">
+    <h2>1RM Estimator</h2>
+    <div class="calc-row"><label>Weight lifted (kg)</label><input type="number" id="rm-w" value="100" step="2.5"></div>
+    <div class="calc-row"><label>Reps completed</label><input type="number" id="rm-r" value="5" min="1" max="20"></div>
+    <div class="calc-row"><label>Estimated 1RM</label><div class="out" id="rm-out">—</div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;">Epley: weight × (1 + reps/30)</div>
+  </div>
+  <div class="card">
+    <h2>Warm-up Ramp</h2>
+    <div class="calc-row"><label>Top-set target (kg)</label><input type="number" id="ramp-w" value="100" step="2.5"></div>
+    <div id="ramp-out" style="margin-top:10px;"></div>
+  </div>
+  <div class="card">
+    <h2>Plate Calculator</h2>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">20 kg barbell, kg plates</div>
+    <div class="calc-row"><label>Target load (kg)</label><input type="number" id="pl-w" value="100" step="2.5"></div>
+    <div id="pl-out" style="margin-top:10px;"></div>
+  </div>
+  <div class="card">
+    <h2>Daily Targets</h2>
+    <div class="kv-row"><span class="k">Protein (g/day)</span><span class="v" id="nut-p">—</span></div>
+    <div class="kv-row"><span class="k">Maintenance kcal</span><span class="v" id="nut-m">—</span></div>
+    <div class="kv-row"><span class="k">Target kcal (lean bulk)</span><span class="v" id="nut-t" style="color:var(--accent)">—</span></div>
+    <div class="kv-row"><span class="k">Carbs (g)</span><span class="v" id="nut-c">—</span></div>
+    <div class="kv-row"><span class="k">Fat (g)</span><span class="v" id="nut-f">—</span></div>
+  </div>`;
+}
+
+function bindToolHandlers() {
+  const compute = () => {
+    const w = parseFloat(document.getElementById('rm-w').value) || 0;
+    const r = parseFloat(document.getElementById('rm-r').value) || 0;
+    const orm = w * (1 + r/30);
+    document.getElementById('rm-out').textContent = orm ? `${orm.toFixed(1)} kg` : '—';
+  };
+  ['rm-w','rm-r'].forEach(id => document.getElementById(id).addEventListener('input', compute));
+  compute();
+
+  const ramp = () => {
+    const w = parseFloat(document.getElementById('ramp-w').value) || 0;
+    const sets = [
+      {l: 20, r: 8, label: 'Empty bar'},
+      {l: Math.round(w*0.6*2)/2, r: 5, label: '60%'},
+      {l: Math.round(w*0.75*2)/2, r: 3, label: '75%'},
+      {l: Math.round(w*0.9*2)/2, r: 2, label: '90%'},
+      {l: w, r: '×reps', label: 'TOP SET', top: true}
+    ];
+    document.getElementById('ramp-out').innerHTML = sets.map(s =>
+      `<div class="ramp-set ${s.top?'top':''}"><span>${s.label}</span><span class="ld">${s.l} kg</span><span>× ${s.r}</span></div>`
+    ).join('');
+  };
+  document.getElementById('ramp-w').addEventListener('input', ramp);
+  ramp();
+
+  const plate = () => {
+    const w = parseFloat(document.getElementById('pl-w').value) || 0;
+    const perSide = (w - 20) / 2;
+    if (perSide < 0) { document.getElementById('pl-out').innerHTML = '<div style="font-size:13px;color:var(--muted);">Below bar weight (20 kg).</div>'; return; }
+    const plates = [20, 10, 5, 2.5, 1.25];
+    let rem = perSide, html = '<div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Per side:</div>';
+    plates.forEach(p => {
+      const n = Math.floor(rem / p);
+      if (n > 0) html += `<div class="ramp-set"><span>${p} kg</span><span></span><span>× ${n}</span></div>`;
+      rem -= n * p;
+    });
+    if (Math.abs(rem) > 0.01) html += `<div style="font-size:11px;color:var(--warn);margin-top:6px;">Remainder: ${rem.toFixed(2)} kg</div>`;
+    document.getElementById('pl-out').innerHTML = html;
+  };
+  document.getElementById('pl-w').addEventListener('input', plate);
+  plate();
+
+  const bw = state.config.bodyweight;
+  const protein = bw * state.config.proteinGperKg;
+  const maint = bw * 33;
+  const targ = maint + state.config.surplus;
+  document.getElementById('nut-p').textContent = Math.round(protein) + ' g';
+  document.getElementById('nut-m').textContent = Math.round(maint) + ' kcal';
+  document.getElementById('nut-t').textContent = Math.round(targ) + ' kcal';
+  document.getElementById('nut-c').textContent = Math.round(targ*0.45/4) + ' g';
+  document.getElementById('nut-f').textContent = Math.round(targ*0.25/9) + ' g';
+}
+
+// ========================= SETTINGS =========================
+function renderSettings() {
+  const c = state.config;
+  return `
+  <div class="card">
+    <h2>Profile</h2>
+    <div class="kv-row"><span class="k">Bodyweight (kg)</span><input type="number" value="${c.bodyweight}" step="0.5" onchange="updateConfig('bodyweight',this.value)"></div>
+    <div class="kv-row"><span class="k">Age</span><input type="number" value="${c.age}" onchange="updateConfig('age',this.value)"></div>
+    <div class="kv-row"><span class="k">Avg sleep (hrs)</span><input type="number" value="${c.sleep}" step="0.5" onchange="updateConfig('sleep',this.value)"></div>
+    <div class="kv-row"><span class="k">Protein (g/kg)</span><input type="number" value="${c.proteinGperKg}" step="0.1" onchange="updateConfig('proteinGperKg',this.value)"></div>
+    <div class="kv-row"><span class="k">Surplus (kcal)</span><input type="number" value="${c.surplus}" step="50" onchange="updateConfig('surplus',this.value)"></div>
+    <div class="kv-row"><span class="k">Start date</span><input type="date" value="${c.startDate}" onchange="updateConfig('startDate',this.value)"></div>
+  </div>
+  <div class="card">
+    <h2>Sleep coaching</h2>
+    ${c.sleep < 6 ? '<div class="alert">Sub-6h sleep caps hypertrophy ~30-50%. Pick 2 fixes:</div>' : '<div class="alert good">Sleep adequate. Keep it consistent.</div>'}
+    <div style="font-size:13px;line-height:1.7;">
+      ☐ Screens off 60 min pre-bed<br>
+      ☐ Last caffeine ≤ 10h before sleep<br>
+      ☐ Bedroom &lt; 19°C, blackout<br>
+      ☐ Same wake time ± 30 min<br>
+      ☐ No alcohol 3h before bed<br>
+      ☐ Magnesium glycinate 300-400mg PM
+    </div>
+  </div>
+  <div class="card">
+    <h2>Data</h2>
+    <button class="btn btn-ghost btn-block" onclick="exportData()">Export to CSV</button>
+    <button class="btn btn-grey btn-block" style="margin-top:8px;" onclick="exportJSON()">Backup (JSON)</button>
+    <button class="btn btn-grey btn-block" style="margin-top:8px;" onclick="importPrompt()">Restore backup</button>
+    <button class="btn btn-block" style="margin-top:16px;background:var(--danger);" onclick="resetAll()">Reset all data</button>
+  </div>
+  <div class="card">
+    <h2>About</h2>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;">12-week strength + hypertrophy program with auto-progression. Data lives on this device only. Add to home screen for full-screen app feel.</div>
+  </div>`;
+}
+
+function updateConfig(key, val) {
+  state.config[key] = key === 'startDate' ? val : parseFloat(val);
+  saveState();
+  toast('Saved');
+  if (currentScreen === 'settings') render();
+}
+
+function exportData() {
+  let csv = 'Week,Lift,Date,Exercise,Set,Weight,Reps,RPE\n';
+  for (const [k, sess] of Object.entries(state.log)) {
+    const m = k.match(/^w(\d+)_(\w+)$/);
+    if (!m) continue;
+    const [_, week, lift] = m;
+    for (const [exId, sets] of Object.entries(sess.sets || {})) {
+      const ex = PROGRAM[lift].exercises.find(e=>e.id===exId);
+      sets.forEach((s, i) => {
+        csv += `${week},${lift},${sess.date},"${ex?.name || exId}",${i+1},${s.weight||''},${s.reps||''},${s.rpe||''}\n`;
+      });
+    }
+  }
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `lift_log_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('Exported');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `lift_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('Backup saved');
+}
+
+function importPrompt() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = (ev) => {
+      try {
+        state = JSON.parse(ev.target.result);
+        saveState();
+        toast('Restored');
+        render();
+      } catch { toast('Invalid file', 'warn'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+function resetAll() {
+  if (!confirm('Erase ALL logged data? This cannot be undone.')) return;
+  localStorage.removeItem(KEY);
+  state = loadState();
+  toast('Reset');
+  render();
+}
+
+// ========================= TIMER =========================
+let timerInterval = null, timerEnd = 0;
+function startTimer(secs) {
+  stopTimer();
+  timerEnd = Date.now() + secs * 1000;
+  const fab = document.getElementById('timerFab');
+  fab.classList.add('show');
+  const tick = () => {
+    const rem = Math.max(0, Math.round((timerEnd - Date.now()) / 1000));
+    const m = Math.floor(rem / 60), s = rem % 60;
+    document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (rem <= 0) {
+      stopTimer();
+      try { navigator.vibrate && navigator.vibrate([200,100,200]); } catch {}
+      toast('Rest done', 'good');
+    }
+  };
+  tick();
+  timerInterval = setInterval(tick, 250);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timerFab').classList.remove('show');
+}
+
+// ========================= BOOT =========================
+render();
+
+// Keep state fresh if app left open
+setInterval(() => { if (currentScreen === 'today') render(); }, 60000);
+</script>
+</body>
+</html>
