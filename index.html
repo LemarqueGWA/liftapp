@@ -254,50 +254,88 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 // ========================= DATA MODEL =========================
 const PROGRAM = {
   A: {
-    name: 'Lift A — Lower', desc: 'Strength-led. ~45 min, then easy run 3 km.', day: 1,
+    name: 'Heavy Lower', desc: 'Squat + RDL focus. 3km easy run after.', day: 1, optional: false,
     exercises: [
       {id:'sq-top', name:'Back squat (top set)', sets:1, reps:'5', rpe:8, bump:5, notes:'Ramp up. Top set only counts for progression.'},
-      {id:'sq-bo', name:'Back squat (back-off)', sets:2, reps:'5', rpe:7, bump:5, notes:'-10% of top set.'},
-      {id:'rdl', name:'Romanian deadlift', sets:3, reps:'6-8', rpe:7, bump:5, notes:'Slow eccentric.'},
-      {id:'wpu', name:'Weighted pull-up', sets:3, reps:'5', rpe:8, bump:2.5, notes:'SS w/ DB bench. Log added weight.'},
-      {id:'dbb', name:'DB bench press', sets:3, reps:'6-8', rpe:7, bump:2.5, notes:'SS w/ pull-up. Per DB.'},
-      {id:'fp', name:'Cable face pull', sets:3, reps:'15', rpe:7, bump:2.5, notes:'Rear delt.'},
-      {id:'plk', name:'Weighted plank', sets:3, reps:'45s', rpe:7, bump:2.5, notes:'Core.'}
+      {id:'sq-bo', name:'Back squat (back-off)', sets:2, reps:'5', rpe:7, bump:5, notes:'-10% of top set load.'},
+      {id:'rdl', name:'Romanian deadlift', sets:3, reps:'6-8', rpe:7, bump:5, notes:'Slow eccentric, neutral spine.'},
+      {id:'calf', name:'Standing calf raise', sets:3, reps:'10-12', rpe:8, bump:2.5, notes:'1s pause at top stretch.'},
+      {id:'hlr-a', name:'Hanging leg raise', sets:3, reps:'10', rpe:7, bump:0, notes:'Bodyweight. Slow controlled.'},
+      {id:'run-a', name:'Easy run (after lift)', sets:1, reps:'3km', rpe:6, bump:0, notes:'Z2 pace. Log time.'}
     ]
   },
   B: {
-    name: 'Lift B — Upper', desc: 'Hypertrophy-led. ~45 min, then easy run 3 km.', day: 3,
+    name: 'Compromised 3km', desc: 'Run intervals + loaded circuits. Target pace 4:55/km.', day: 2, optional: false,
     exercises: [
-      {id:'idb', name:'Incline DB bench press', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Main push. Per DB.'},
-      {id:'br', name:'Barbell row', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Strict, torso ~45°.'},
-      {id:'bss', name:'Bulgarian split squat', sets:3, reps:'10/leg', rpe:8, bump:2.5, notes:'SS w/ dip. Per DB.'},
-      {id:'wd', name:'Weighted dip', sets:3, reps:'8-10', rpe:8, bump:2.5, notes:'SS w/ BSS. Added weight.'},
-      {id:'lr', name:'Cable lateral raise', sets:3, reps:'12-15', rpe:7, bump:1.25, notes:'Side delt.'},
-      {id:'hc', name:'DB hammer curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'Per DB.'},
-      {id:'hlr', name:'Hanging leg raise', sets:3, reps:'12', rpe:8, bump:0, notes:'Bodyweight.'}
+      {id:'r1', name:'Run #1', sets:1, reps:'1km', rpe:8, bump:0, notes:'Target 4:55/km. Log time.'},
+      {id:'sls', name:'Single-leg step-up (40cm)', sets:1, reps:'30 total', rpe:8, bump:1, notes:'12kg load. ~15/leg.'},
+      {id:'r2', name:'Run #2', sets:1, reps:'1km', rpe:8, bump:0, notes:'Target 4:55/km. Log time.'},
+      {id:'sbl', name:'Sandbag lunges', sets:1, reps:'100m', rpe:8, bump:1, notes:'20kg load.'},
+      {id:'r3', name:'Run #3', sets:1, reps:'1km', rpe:8, bump:0, notes:'Target 4:55/km. Log time.'},
+      {id:'thr', name:'Squat thrusters', sets:1, reps:'100', rpe:9, bump:1, notes:'12kg load. Unbroken if possible.'}
     ]
   },
   C: {
-    name: 'Lift C — Mixed', desc: 'Posterior + press. Pre-lift: 20g carbs. Long run after.', day: 5,
+    name: 'Calisthenics A', desc: 'High-volume push/pull + bicep finisher. 3km run after.', day: 3, optional: false,
     exercises: [
-      {id:'dl', name:'Conventional deadlift', sets:3, reps:'3-5', rpe:8, bump:5, notes:'20g carbs pre-lift.'},
-      {id:'ohp', name:'Overhead press (BB)', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'Strict, no leg drive.'},
-      {id:'fsq', name:'Front squat', sets:3, reps:'8', rpe:7, bump:2.5, notes:'Quad emphasis.'},
-      {id:'wcu', name:'Weighted chin-up', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'SS w/ carry. Added weight.'},
-      {id:'fc', name:"Farmer's carry", sets:3, reps:'40m', rpe:8, bump:5, notes:'SS w/ chin-up. Per DB.'},
-      {id:'tpd', name:'Cable triceps pushdown', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'Rope.'},
-      {id:'cc', name:'Cable crunch', sets:3, reps:'15', rpe:8, bump:2.5, notes:'Core.'}
+      {id:'hlr-c', name:'Hanging leg raise', sets:3, reps:'10', rpe:7, bump:0, notes:'Warm-up / core prep.'},
+      {id:'wpu', name:'Weighted wide-grip pull-up', sets:5, reps:'10', rpe:8, bump:1.25, notes:'SS w/ ring dip. Log added weight.'},
+      {id:'wrd', name:'Weighted ring dip', sets:5, reps:'10', rpe:8, bump:1.25, notes:'SS w/ pull-up. Log added weight.'},
+      {id:'rbc', name:'Ring bicep curl', sets:3, reps:'10', rpe:8, bump:0, notes:'SS w/ tuck raise. BW.'},
+      {id:'lr90-c', name:'Leg raise to 90°', sets:3, reps:'10', rpe:7, bump:0, notes:'Bodyweight.'},
+      {id:'tr-c', name:'Tuck raise', sets:3, reps:'10', rpe:7, bump:0, notes:'Bodyweight.'},
+      {id:'run-c', name:'Easy run (after lift)', sets:1, reps:'3km', rpe:6, bump:0, notes:'Z2 pace. Log time.'}
     ]
   },
   D: {
-    name: 'Lift D — Pump', desc: 'Optional ~22 min. Aesthetic isolation. Swim after.', day: 6,
+    name: 'Plyo + Strides', desc: 'Power, speed, reverse hyper finishers.', day: 4, optional: false,
     exercises: [
-      {id:'cr', name:'Standing calf raise', sets:4, reps:'10-12', rpe:8, bump:2.5, notes:'SS w/ shrug. 1s pause.'},
-      {id:'sh', name:'DB shrug', sets:4, reps:'12-15', rpe:8, bump:2.5, notes:'SS w/ calf. Pure vertical.'},
-      {id:'lr2', name:'Cable lateral raise (1-arm)', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ curl.'},
-      {id:'icu', name:'DB incline curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'SS w/ LR. ~60° bench.'},
-      {id:'oce', name:'Overhead cable tri ext', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ leg curl.'},
-      {id:'lc', name:'Seated leg curl / Nordic', sets:3, reps:'8-12', rpe:8, bump:2.5, notes:'SS w/ tri. Hamstring knee flex.'}
+      {id:'wu', name:'Fast run warm-up', sets:1, reps:'1.5km', rpe:7, bump:0, notes:'Building pace. Log time.'},
+      {id:'st1', name:'50m strides — block 1', sets:3, reps:'50m', rpe:8, bump:0, notes:'~85% effort.'},
+      {id:'sbj', name:'Single-leg box jumps', sets:5, reps:'8/leg', rpe:8, bump:0, notes:'Box height to ability.'},
+      {id:'st2', name:'50m strides — block 2', sets:3, reps:'50m', rpe:8, bump:0, notes:'~85% effort.'},
+      {id:'bbj', name:'Burpee broadjumps', sets:5, reps:'6', rpe:9, bump:0, notes:'Explosive.'},
+      {id:'st3', name:'50m strides — block 3', sets:3, reps:'50m', rpe:8, bump:0, notes:'~85% effort.'},
+      {id:'tor', name:'Toe raises', sets:2, reps:'25', rpe:8, bump:0, notes:'Calves.'},
+      {id:'rh', name:'Reverse hypers', sets:3, reps:'10', rpe:7, bump:0, notes:'Controlled. Glute/back.'}
+    ]
+  },
+  E: {
+    name: 'Heavy Upper', desc: 'Incline bench + BB row + chins. 3km run after.', day: 5, optional: false,
+    exercises: [
+      {id:'idb', name:'Incline DB bench press', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Main push. Per DB.'},
+      {id:'br', name:'Barbell row', sets:4, reps:'8-10', rpe:8, bump:2.5, notes:'Strict, torso ~45°.'},
+      {id:'wcu', name:'Weighted chin-up', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'SS w/ OHP. Added weight.'},
+      {id:'ohp', name:'Overhead press (BB)', sets:3, reps:'6-8', rpe:8, bump:2.5, notes:'SS w/ chin. Strict, no leg drive.'},
+      {id:'clr', name:'Cable lateral raise', sets:3, reps:'12-15', rpe:7, bump:1.25, notes:'Side delt.'},
+      {id:'hc', name:'DB hammer curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'Per DB.'},
+      {id:'run-e', name:'Easy run (after lift)', sets:1, reps:'3km', rpe:6, bump:0, notes:'Z2 pace. Log time.'}
+    ]
+  },
+  F: {
+    name: 'Calisthenics B', desc: 'Mirror of A. Chins + dips + chest flies. Swim 20 min after.', day: 6, optional: false,
+    exercises: [
+      {id:'hlr-f', name:'Hanging leg raise', sets:3, reps:'10', rpe:7, bump:0, notes:'Warm-up / core prep.'},
+      {id:'wrcu', name:'Weighted ring chin-up', sets:5, reps:'10', rpe:8, bump:1.25, notes:'SS w/ straight dip. Log added weight.'},
+      {id:'wsd', name:'Weighted straight dip', sets:5, reps:'10', rpe:8, bump:1.25, notes:'SS w/ chin. Log added weight.'},
+      {id:'rcf', name:'Ring chest fly', sets:3, reps:'10', rpe:8, bump:0, notes:'SS w/ leg raise. BW.'},
+      {id:'lr90-f', name:'Leg raise to 90°', sets:3, reps:'10', rpe:7, bump:0, notes:'Bodyweight.'},
+      {id:'tr-f', name:'Tuck raise', sets:3, reps:'10', rpe:7, bump:0, notes:'Bodyweight.'},
+      {id:'swim-f', name:'Swim (after lift)', sets:1, reps:'20 min', rpe:6, bump:0, notes:'Easy aerobic.'}
+    ]
+  },
+  G: {
+    name: 'Arm + Aesthetic', desc: 'OPTIONAL. Bicep-led with traps/calves/delts/tris/hams. Swim 20 min after.', day: 0, optional: true,
+    exercises: [
+      {id:'ic', name:'DB incline curl', sets:4, reps:'10-12', rpe:8, bump:1.25, notes:'Bench ~60°. SS w/ shrug. Full stretch at bottom.'},
+      {id:'sh', name:'DB shrug', sets:4, reps:'12-15', rpe:8, bump:2.5, notes:'SS w/ incline curl. Pure vertical, no rolling.'},
+      {id:'pc', name:'EZ-bar / DB preacher curl', sets:3, reps:'10-12', rpe:8, bump:1.25, notes:'SS w/ calf. Peak contraction.'},
+      {id:'cr-g', name:'Standing calf raise', sets:4, reps:'10-12', rpe:8, bump:2.5, notes:'SS w/ preacher. Single-leg if no machine.'},
+      {id:'chc', name:'Cable hammer curl (rope)', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ lateral. Brachialis emphasis.'},
+      {id:'lr-g', name:'Cable lateral raise (1-arm)', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ hammer. Lean away from cable.'},
+      {id:'oce', name:'Overhead cable tri ext', sets:3, reps:'12-15', rpe:8, bump:1.25, notes:'SS w/ leg curl. Rope, long head.'},
+      {id:'lc', name:'Seated leg curl / Nordic', sets:3, reps:'8-12', rpe:8, bump:2.5, notes:'SS w/ tri. Nordic = BW, log "BW".'},
+      {id:'swim-g', name:'Swim (after pump)', sets:1, reps:'20 min', rpe:6, bump:0, notes:'Easy aerobic.'}
     ]
   }
 };
@@ -395,12 +433,13 @@ function getDayStatus(date) {
   else if (complete) st = 'completed';
   else if (logged) st = 'progress';
   else if (isToday) st = 'today';
+  else if (program.optional) st = 'rest';
   else st = 'missed';
 
   return {
     state: st,
     label: program.name,
-    sublabel: `Week ${week}${isDeloadWeek(week) ? ' • Deload' : ''}`,
+    sublabel: `Week ${week}${isDeloadWeek(week) ? ' • Deload' : ''}${program.optional ? ' • Optional' : ''}`,
     liftKey, week
   };
 }
@@ -412,12 +451,12 @@ function todayLift() {
   return null;
 }
 function dayLabel(d) {
-  if (d === 0) return {label:'Rest', sub:'Sleep priority.'};
-  if (d === 2) return {label:'Swim', sub:'20 min easy aerobic. Active recovery.'};
-  if (d === 4) return {label:'Mobility / Rest', sub:'Non-negotiable recovery day.'};
   const k = todayLift();
-  if (k) return {label: PROGRAM[k].name, sub: PROGRAM[k].desc};
-  return {label:'Rest', sub:''};
+  if (k) {
+    const p = PROGRAM[k];
+    return {label: p.name, sub: p.desc, optional: p.optional};
+  }
+  return {label:'Rest', sub:'', optional: false};
 }
 
 // Get the most recent logged session for a lift, before or equal to a given week
@@ -512,7 +551,7 @@ function renderToday(week) {
   const liftKey = todayLift();
   const info = dayLabel(d);
   let html = `<div class="day-banner">
-    <div class="label">${DAY_NAMES[d].toUpperCase()} • WEEK ${week}${isDeloadWeek(week) ? ' • DELOAD' : ''}</div>
+    <div class="label">${DAY_NAMES[d].toUpperCase()} • WEEK ${week}${isDeloadWeek(week) ? ' • DELOAD' : ''}${info.optional ? ' • OPTIONAL' : ''}</div>
     <div class="name">${info.label}</div>
     <div class="desc">${info.sub}</div>
   </div>`;
@@ -523,8 +562,12 @@ function renderToday(week) {
   }
 
   if (!liftKey) {
-    html += `<div class="empty"><div class="ic">✓</div><div>${d === 0 || d === 4 ? 'Rest day. Recovery is training.' : 'Cardio only today.'}</div></div>`;
+    html += `<div class="empty"><div class="ic">✓</div><div>Rest day. Recovery is training.</div></div>`;
     return html;
+  }
+
+  if (info.optional) {
+    html += `<div class="preview-note">Optional finisher day. Skip if recovery is poor (sleep &lt; 5h, joint pain, lingering fatigue). Otherwise: keep loads moderate, focus on stretch + pump.</div>`;
   }
 
   // Lift session
@@ -653,12 +696,12 @@ function renderSchedule(currentWeek) {
     </div>`;
   }
 
-  html += `<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:22px 4px 8px;">LIFT PROGRESS</div>`;
-  ['A','B','C','D'].forEach(k => {
+  html += `<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;margin:22px 4px 8px;">PROGRESS BY SESSION</div>`;
+  ['A','B','C','D','E','F','G'].forEach(k => {
     const p = PROGRAM[k];
     const last = lastSession(k, 13);
     html += `<div class="card">
-      <h2>${p.name}</h2>
+      <h2>${p.name}${p.optional?' <span style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;">Optional</span>':''}</h2>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">${DAY_FULL[p.day]}</div>
       ${last ? `<div style="font-size:13px;">Last logged: Week ${last.week}, ${new Date(last.data.date).toLocaleDateString()}</div>` : '<div style="font-size:13px;color:var(--muted);">Not yet started</div>'}
     </div>`;
@@ -766,8 +809,8 @@ function renderProgress() {
   // Show top set progression for each lift's main compound
   const lifts = {
     A: { name: 'Back squat', exId: 'sq-top' },
-    B: { name: 'Incline DB bench', exId: 'idb' },
-    C: { name: 'Deadlift', exId: 'dl' }
+    E: { name: 'Incline DB bench', exId: 'idb' },
+    C: { name: 'Weighted pull-up (calisthenics)', exId: 'wpu' }
   };
   let html = '';
   for (const [k, info] of Object.entries(lifts)) {
